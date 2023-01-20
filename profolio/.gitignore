@@ -1,5 +1,5 @@
+staticfiles/
 profolioVenv/
 *.sqlite3
 profolio/settings.py
 code.zip
-staticfiles

@@ -109,8 +109,9 @@ settings.py
 5. method2: 
         
         1. add static-files.config in  .ebextensions folder
+        2. create a zip folder without venv and static folders (staticfiles folder is included)
 
-6. method3: (static files from other https service like s3 bucket)
+6. method3: (static files from other https service like s3 bucket) [the best but Failed]
         
         1. go to amazon s3 bucket and uncheck the block settings
         2. 靜態網站託管 => 啟用
