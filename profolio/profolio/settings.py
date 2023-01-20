@@ -24,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '=dz0$k4bn&^#5@f))3y#w3_u&r+o-qwpsyyd%zsle)!j)7tt#t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv("IS_PRODUCTION",True)
+DEBUG = getenv("IS_DEVELOPMENT",True)
 
 ALLOWED_HOSTS = [
-    getenv("APP_HOST")
+    getenv("APP_HOST","127.0.0.1")
 ]
 
 
@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
 
 INSTALLED_APPS = [
     'blog',
+    'storages',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,10 +78,20 @@ WSGI_APPLICATION = 'profolio.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'djangoLeetcode',
+        'PASSWORD': 'Originalfake1234',
+        'HOST': 'djangoleetcode.czxd4daxwm2l.ap-northeast-1.rds.amazonaws.com',
+        'PORT': '5432'
     }
 }
 
@@ -131,3 +142,15 @@ STATICFILES_DIRS = [
 
 MEDIA_ROOT = BASE_DIR / "uploads"
 MEDIA_URL = "/files/"
+
+AWS_STORAGE_BUCKET_NAME = "django-leetcode"
+AWS_S3_REGION_NAME = "ap-northeast-1"
+AWS_ACCESS_KEY_ID  ="AKIA6H6QOLBPNLEKTKPM"
+AWS_SECRET_ACCESS_KEY = "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"
+
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+STATICFILES_FOLDER = "static"
+MEDIAFILES_FOLDER = "media"
+STATICFILES_STORAGE = "custom_storages.StaticFileStorage"
+DEFAULT_FILE_STORAGE = "custom_storages.MediaFileStorage"

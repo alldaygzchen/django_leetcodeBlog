@@ -75,7 +75,8 @@ create request.session["stored_posts"] and check post_id in stored_posts or stor
                         <button>Read Later</button>
                 </form>
 
-### Deployment considerations
+### Deployment considerations (elastic beanstalk & rds & s3)
+
 1. Choose Database
 2. Adjust settings
 3. Collect static files (since not served automatically)
@@ -85,19 +86,103 @@ create request.session["stored_posts"] and check post_id in stored_posts or stor
 
 settings.py   
 1. DEBUG = False
+
 2. colleting all static files to this folder   
 
         [STATIC_ROOT = BASE_DIR /"staticfiles"]  
-        python manage.py collectstatic   
+        python manage.py collectstatic  
+
 3. from os import getenv
 
         getenv("SECRET_KEY")
-        getenv("IS_PRODUCTION",True)
-        getenv("APP_HOST")        
+        getenv("IS_DEVELOPMENT",True)
+        getenv("APP_HOST","localhost")     
 
-4. method1: Configure Django to server such files  
-        static(settings.STATIC_URL,document_root = settings.STATIC_ROOT)   
+4. method1: 
+        
+        1. urls.py => static(settings.STATIC_URL,document_root = settings.STATIC_ROOT)
+        2. create .ebextensions folder and django.config
+        3. create a zip folder without venv and static folders (staticfiles folder is included) 
+        4. Open AWS elastic beanstalk and configure settings
+        5. elastic beanstalk software settings => env variables
 
+5. method2: 
+        
+        1. add static-files.config in  .ebextensions folder
+
+6. method3: (static files from other https service like s3 bucket)
+        
+        1. go to amazon s3 bucket and uncheck the block settings
+        2. 靜態網站託管 => 啟用
+        3. 許可 => 編輯跨來源資源分享 (CORS)
+        [
+                {
+                "AllowedHeaders":["*"],
+                "AllowedMethods":["GET"],
+                "AllowedOrigins":["*"],
+                "ExposeHeaders":[]
+                }
+        ]
+        4. 許可 => 儲存貯體政策
+        {
+        "Version":"2012-10-17",
+        "Statement":[{
+                "Sid":"PublicReadGetObject",
+                "Effect":"Allow",
+                "Principal": "*",
+                "Action":["s3:GetObject"],
+                "Resource":["arn:aws:s3:::django-leetcode/*"
+        ]}
+        ]
+        }
+
+        5. aws Iam
+        建立使用者群組 => AmazonS3FullAccess 授權
+        建立使用者 => progrmatically access
+        #https://repost.aws/questions/QUYmfTq-vOT-ehonIKesLJtg/change-access-type-for-an-iam-user
+        
+        pip install django-storages boto3
+
+
+        AWS_STORAGE_BUCKET_NAME = ""
+        AWS_S3_REGION_NAME = ""
+        AWS_ACCESS_KEY_ID  =""
+        AWS_SECRET_ACCESS_KEY = ""
+
+        AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+        STATICFILES_STORAGE = "custom_storages.MediaFileStorage"
+        DEFAULT_FILE_STORAGE = "custom_storages.MediaFileStorage"
+
+        add custom-storages.py
+
+
+
+
+6. real db server
+        1. pip install psycopg2-binary
+        2. python -m pip freeze > requirements.txt
+        3. 
+        go to aws rds and create database (free tier)
+        public access: Yes
+
+        settings.py 
+        DATABASES = {
+        'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'postgres',
+                'USER': '<your-rds-db-username>',
+                'PASSWORD': '<your-rds-db-user-password>',
+                'HOST': '<your-rds-db-host>',
+                'PORT': '5432'
+        }
+        }
+
+        4. rds 編輯傳入規則: change ip to anywhere (db can connect to anywhere not only local)
+
+
+
+
+5. SSL and domains is not free in beanstalk
 1. python -m pip freeze > requirements.txt
  
 
@@ -117,3 +202,4 @@ settings.py
         method2: Configure web server to serve static files
 
         method3: Use another service (better performance)
+4. Django orm supports postgres, mariaDB, mySql, Oracle ,SQlite
